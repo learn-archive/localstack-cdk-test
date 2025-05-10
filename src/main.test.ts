@@ -3,7 +3,7 @@ import { StartedLocalStackContainer } from '@testcontainers/localstack';
 import { startLocalstack, stopLocalstack } from './localstack';
 import { deleteAllSqsMessages, getSqsMessages, initSqs, sendSqsMessages } from './sqs';
 
-jest.setTimeout(20000);
+jest.setTimeout(60000);
 
 describe('Sqs integration', () => {
   let sqsClient: SQSClient;
