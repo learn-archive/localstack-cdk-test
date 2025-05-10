@@ -1,8 +1,6 @@
 name: Run LocalStack with Testcontainers
 
 on:
-  push:
-    branches: [main]
   pull_request:
 
 jobs:
