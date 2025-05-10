@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 
-export const TEST_QUEUE_URL = 'http://localhost:4566/000000000000/CreateServerlessAwsWebhookQueue';
 export const AWS_REGION = 'eu-central-1';
-export const QUEUE_NAME = 'my-test-queue';
+export const LOCALSTACK_PORT = 4566;
+export const LOCALSTACK_ENDPOINT = `http://localhost:${LOCALSTACK_PORT}`;
 
 export function fakeSqsMessage(message: any) {
   const body = {

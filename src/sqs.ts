@@ -6,25 +6,26 @@ import {
   SendMessageBatchRequestEntry,
   SQSClient,
 } from '@aws-sdk/client-sqs';
-import { readFromLocalstackFile } from './file';
-import { AWS_REGION, randomUUID } from './test';
+import { AWS_REGION, LOCALSTACK_ENDPOINT, randomUUID } from './test';
 
+export const QUEUE_NAME = 'my-test-queue';
 let sqsClient: SQSClient;
+const QUEUE_URL = `http://sqs.${AWS_REGION}.localhost:4566/000000000000/${QUEUE_NAME}`;
 
-export async function sendSqsMessages<T>(queueUrl: string, messages: T[]): Promise<void> {
+export async function sendSqsMessages<T>(messages: T[]): Promise<void> {
   initSqs();
   const cmd = new SendMessageBatchCommand({
-    QueueUrl: queueUrl,
+    QueueUrl: QUEUE_URL,
     Entries: formatMessagesToBatchMessages<T>(messages),
   });
 
   await sqsClient.send(cmd);
 }
 
-export async function getSqsMessages(queueUrl: string): Promise<Message[]> {
+export async function getSqsMessages(): Promise<Message[]> {
   initSqs();
   const cmd = new ReceiveMessageCommand({
-    QueueUrl: queueUrl,
+    QueueUrl: QUEUE_URL,
     MaxNumberOfMessages: 10,
   });
 
@@ -32,10 +33,10 @@ export async function getSqsMessages(queueUrl: string): Promise<Message[]> {
   return formatSqsRecevedMessages(Messages || []);
 }
 
-export async function deleteAllSqsMessages(queueUrl: string) {
+export async function deleteAllSqsMessages() {
   initSqs();
   const cmd = new PurgeQueueCommand({
-    QueueUrl: queueUrl,
+    QueueUrl: QUEUE_URL,
   });
 
   await sqsClient.send(cmd);
@@ -54,48 +55,11 @@ export function formatMessagesToBatchMessages<T>(messages: T[]): SendMessageBatc
   });
 }
 
-export function initSqs(): SQSClient {
+export function initSqs(endpoint?: string): SQSClient {
   if (sqsClient) return sqsClient;
   sqsClient = new SQSClient({
     region: AWS_REGION,
-    endpoint: readFromLocalstackFile('localstack-endpoint.json'),
+    endpoint: endpoint ?? LOCALSTACK_ENDPOINT,
   });
   return sqsClient;
 }
-
-// // Send a message to the queue
-// const sendMessageResponse = await sqsClient.send(
-//   new SendMessageCommand({
-//     QueueUrl: queueUrl,
-//     MessageBody: 'Hello from LocalStack!',
-//     DelaySeconds: 0,
-//   }),
-// );
-
-// console.log(`Message sent successfully: ${sendMessageResponse.MessageId}`);
-
-// // Receive messages from the queue
-// const receiveMessageResponse = await sqsClient.send(
-//   new ReceiveMessageCommand({
-//     QueueUrl: queueUrl,
-//     MaxNumberOfMessages: 1,
-//     WaitTimeSeconds: 5,
-//   }),
-// );
-
-// if (receiveMessageResponse.Messages && receiveMessageResponse.Messages.length > 0) {
-//   const message = receiveMessageResponse.Messages[0];
-//   console.log(`Received message: ${message.Body}`);
-
-//   // Delete the message from the queue
-//   await sqsClient.send(
-//     new DeleteMessageCommand({
-//       QueueUrl: queueUrl,
-//       ReceiptHandle: message.ReceiptHandle,
-//     }),
-//   );
-
-//   console.log('Message deleted successfully');
-// } else {
-//   console.log('No messages received');
-// }

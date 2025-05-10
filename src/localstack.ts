@@ -1,20 +1,19 @@
 import { CreateQueueCommand } from '@aws-sdk/client-sqs';
 import { LocalstackContainer, StartedLocalStackContainer } from '@testcontainers/localstack';
-import { writeToLocalstackFile } from './file';
-import { initSqs } from './sqs';
-import { QUEUE_NAME } from './test';
+import { initSqs, QUEUE_NAME } from './sqs';
+import { LOCALSTACK_PORT } from './test';
+
+let localstackClient: StartedLocalStackContainer;
 
 export async function startLocalstack(): Promise<StartedLocalStackContainer> {
   // Start LocalStack container
-  const localstack = await new LocalstackContainer('localstack/localstack:3').start();
+  if (localstackClient) return localstackClient;
+  localstackClient = await new LocalstackContainer('localstack/localstack:3').withExposedPorts(LOCALSTACK_PORT).start();
 
-  console.log(`LocalStack started at: ${localstack.getConnectionUri()}`);
-
-  // Write the localstack endpoint to a file
-  writeToLocalstackFile(localstack);
+  console.log(`LocalStack started at: ${localstackClient.getConnectionUri()}`);
 
   // Create SQS client
-  const sqsClient = initSqs();
+  const sqsClient = initSqs(localstackClient.getConnectionUri());
 
   // Create a new SQS queue
   const createQueueResponse = await sqsClient.send(
@@ -29,9 +28,9 @@ export async function startLocalstack(): Promise<StartedLocalStackContainer> {
 
   const queueUrl = createQueueResponse.QueueUrl;
   console.log(`SQS Queue created successfully: ${queueUrl}`);
-  return localstack;
+  return localstackClient;
 }
 
-export async function stopLocalstack(localstack: StartedLocalStackContainer): Promise<void> {
-  await localstack.stop();
+export async function stopLocalstack(): Promise<void> {
+  await localstackClient.stop();
 }
