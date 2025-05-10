@@ -9,11 +9,6 @@ export default {
   roots: ['<rootDir>'],
   testEnvironment: 'node',
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        isolatedModules: true,
-      },
-    ],
+    '^.+\\.tsx?$': ['ts-jest'],
   },
 };

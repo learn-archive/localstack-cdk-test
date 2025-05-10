@@ -3,6 +3,8 @@
     "target": "ES2018",
     "module": "commonjs",
     "lib": ["es2018"],
+    "types": ["jest"],
+    "isolatedModules": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
